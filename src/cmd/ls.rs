@@ -42,13 +42,17 @@ pub fn run(long: bool, file: Option<String>) -> Result<(), String> {
         None => chive.records.clone(),
     };
 
+    // Single-file lookup: show a full detail view with no truncation
+    if file.is_some() {
+        print_detail(&records[0], long);
+        return Ok(());
+    }
+
     let (id_w, file_w, desc_w, notes_w) = col_widths(&records);
 
     if long {
         print_table_long(&records, id_w, file_w, desc_w, notes_w);
-        if file.is_none() {
-            println!("\n  Created: {}", chive.created);
-        }
+        println!("\n  Created: {}", chive.created);
     } else {
         print_table(&records, id_w, file_w, desc_w, notes_w);
     }
@@ -101,6 +105,25 @@ pub fn print_table(records: &[ChiveRecord], id_w: usize, file_w: usize, desc_w: 
     }
 
     println!("{}", hline(cols, "└", "┴", "┘"));
+}
+
+fn print_detail(r: &ChiveRecord, long: bool) {
+    let label = |s: &str| color::bold(s);
+    println!("{} {}", label("File:"), r.filename);
+    println!("{} {}", label("#:  "), r.id);
+    if r.description.is_empty() {
+        println!("{} {}", label("Desc:"), color::dim("(none)"));
+    } else {
+        println!("{} {}", label("Desc:"), r.description);
+    }
+    if r.notes.is_empty() {
+        println!("{} {}", label("Notes:"), color::dim("(none)"));
+    } else {
+        println!("{} {}", label("Notes:"), r.notes);
+    }
+    if long {
+        println!("{} {}", label("Edited:"), r.last_edited);
+    }
 }
 
 fn print_table_long(records: &[ChiveRecord], id_w: usize, file_w: usize, desc_w: usize, notes_w: usize) {
