@@ -36,6 +36,9 @@ enum Command {
         /// Combined -la style
         #[arg(short = 'a', hide = true)]
         all_flag: bool,
+        /// Show only the entry for this file
+        #[arg(value_hint = clap::builder::ValueHint::FilePath)]
+        file: Option<String>,
     },
     /// Edit description and notes for an item
     Edit {
@@ -76,7 +79,7 @@ fn main() {
     } else {
         match cli.command {
             Some(Command::New { all, long_flag })   => cmd::new::run(all || long_flag),
-            Some(Command::Ls { long, .. })           => cmd::ls::run(long),
+            Some(Command::Ls { long, file, .. })     => cmd::ls::run(long, file),
             Some(Command::Edit { item })             => cmd::edit::run(item),
             Some(Command::Find { query })            => cmd::find::run(&query.join(" ")),
             Some(Command::Rm { chive, item })        => cmd::rm::run(chive, item),
